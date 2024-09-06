@@ -3,7 +3,7 @@ from flask import Flask, render_template, request, jsonify
 from flask_migrate import Migrate
 from models import db, Todo, CategoryEnum
 import logging
-from sqlalchemy import text, create_engine
+from sqlalchemy import text, create_engine, or_
 from sqlalchemy.exc import SQLAlchemyError
 from datetime import datetime
 
@@ -112,6 +112,32 @@ def delete_todo(todo_id):
         db.session.rollback()
         logger.error(f"Error deleting todo: {str(e)}", exc_info=True)
         return jsonify({"error": "An error occurred while deleting the todo"}), 500
+
+@app.route("/api/todos/search", methods=["GET"])
+def search_todos():
+    try:
+        query = request.args.get('q', '')
+        logger.info(f"Searching todos with query: {query}")
+        todos = db.session.execute(
+            db.select(Todo).filter(
+                or_(
+                    Todo.task.ilike(f"%{query}%"),
+                    Todo.category.cast(db.String).ilike(f"%{query}%")
+                )
+            ).order_by(Todo.id)
+        ).scalars().all()
+        todo_list = [{
+            'id': todo.id,
+            'task': todo.task,
+            'completed': todo.completed,
+            'category': todo.category.value if todo.category else 'No Category',
+            'due_date': todo.due_date.isoformat() if todo.due_date else None
+        } for todo in todos]
+        logger.info(f'Search results: {todo_list}')
+        return jsonify(todo_list)
+    except Exception as e:
+        logger.error(f'Error searching todos: {str(e)}', exc_info=True)
+        return jsonify({"error": "An error occurred while searching todos"}), 500
 
 if __name__ == "__main__":
     db_url = app.config["SQLALCHEMY_DATABASE_URI"]

@@ -17,6 +17,10 @@
             <input type="date" id="due-date-input">
             <button type="submit">Add Task</button>
         </form>
+        <div id="search-container">
+            <input type="text" id="search-input" placeholder="Search tasks">
+            <button id="search-button">Search</button>
+        </div>
         <ul id="todo-list"></ul>
     </div>
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>

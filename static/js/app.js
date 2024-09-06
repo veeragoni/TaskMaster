@@ -4,6 +4,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const categorySelect = document.getElementById('category-select');
     const dueDateInput = document.getElementById('due-date-input');
     const todoList = document.getElementById('todo-list');
+    const searchInput = document.getElementById('search-input');
+    const searchButton = document.getElementById('search-button');
 
     console.log('DOM content loaded');
 
@@ -26,9 +28,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Fetch and display todos
-    function fetchTodos() {
+    function fetchTodos(searchQuery = '') {
         console.log('Fetching todos');
-        fetch('/api/todos')
+        let url = '/api/todos';
+        if (searchQuery) {
+            url += `/search?q=${encodeURIComponent(searchQuery)}`;
+        }
+        fetch(url)
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
@@ -159,6 +165,20 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             console.log('Task or category is empty');
             alert('Please enter a task and select a category.');
+        }
+    });
+
+    // Search todos
+    searchButton.addEventListener('click', () => {
+        const searchQuery = searchInput.value.trim();
+        fetchTodos(searchQuery);
+    });
+
+    // Search on Enter key press
+    searchInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            const searchQuery = searchInput.value.trim();
+            fetchTodos(searchQuery);
         }
     });
 
