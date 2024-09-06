@@ -23,10 +23,11 @@ h1 {
     margin-bottom: 20px;
 }
 
-#todo-input {
+#todo-input, #category-select {
     flex: 1;
     padding: 10px;
     font-size: 16px;
+    margin-right: 10px;
 }
 
 button {
@@ -35,6 +36,7 @@ button {
     color: #fff;
     border: none;
     cursor: pointer;
+    font-size: 16px;
 }
 
 button:hover {
@@ -58,4 +60,49 @@ button:hover {
 .completed {
     text-decoration: line-through;
     color: #888;
+}
+
+.category {
+    font-size: 0.8em;
+    color: #666;
+    margin-left: 10px;
+}
+
+#todo-form button[type="submit"] {
+    background-color: #4CAF50;
+    color: white;
+    font-weight: bold;
+}
+
+#todo-form button[type="submit"]:hover {
+    background-color: #45a049;
+}
+
+@media (max-width: 768px) {
+    .container {
+        width: 95%;
+    }
+    #todo-form {
+        flex-direction: column;
+    }
+    #todo-input, #category-select, #todo-form button[type='submit'] {
+        width: 100%;
+        margin-bottom: 10px;
+        margin-right: 0;
+    }
+    button {
+        font-size: 18px;
+        padding: 12px 24px;
+    }
+    #todo-list li {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    #todo-list li div {
+        margin-top: 10px;
+    }
+    .category {
+        margin-left: 0;
+        margin-top: 5px;
+    }
 }
