@@ -27,7 +27,7 @@ def get_categories():
 @app.route('/api/todos', methods=['GET'])
 def get_todos():
     try:
-        todos = db.session.execute(db.select(Todo).order_by(Todo.id)).scalars().all()
+        todos = db.session.execute(db.select(Todo).order_by(Todo.due_date.asc().nullslast(), Todo.id.asc())).scalars().all()
         todo_list = [{
             'id': todo.id,
             'task': todo.task,
