@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const todoForm = document.getElementById('todo-form');
     const todoInput = document.getElementById('todo-input');
     const categorySelect = document.getElementById('category-select');
+    const dueDateInput = document.getElementById('due-date-input');
     const todoList = document.getElementById('todo-list');
 
     console.log('DOM content loaded');
@@ -55,11 +56,14 @@ document.addEventListener('DOMContentLoaded', () => {
         li.dataset.id = todo.id;
         const taskText = todo.task || 'Unnamed Task';
         const categoryText = todo.category || 'No Category';
+        const dueDate = todo.due_date ? new Date(todo.due_date).toLocaleDateString() : 'No due date';
         console.log('Task text:', taskText);
         console.log('Category text:', categoryText);
+        console.log('Due date:', dueDate);
         li.innerHTML = `
             <span class="${todo.completed ? 'completed' : ''}">${taskText}</span>
             <span class="category">${categoryText}</span>
+            <span class="due-date">Due: ${dueDate}</span>
             <div>
                 <button class="toggle-btn">${todo.completed ? 'Undo' : 'Complete'}</button>
                 <button class="delete-btn">Delete</button>
@@ -126,12 +130,13 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         const task = todoInput.value.trim();
         const category = categorySelect.value;
-        console.log('Task:', task, 'Category:', category);
+        const dueDate = dueDateInput.value;
+        console.log('Task:', task, 'Category:', category, 'Due Date:', dueDate);
         if (task && category) {
             fetch('/api/todos', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ task, category })
+                body: JSON.stringify({ task, category, due_date: dueDate })
             })
             .then(response => {
                 if (!response.ok) {
@@ -143,6 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log('New todo added:', newTodo);
                 todoInput.value = '';
                 categorySelect.value = '';
+                dueDateInput.value = '';
                 const li = createTodoElement(newTodo);
                 todoList.appendChild(li);
             })

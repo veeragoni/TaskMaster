@@ -5,6 +5,7 @@ from models import db, Todo, CategoryEnum
 import logging
 from sqlalchemy import text, create_engine
 from sqlalchemy.exc import SQLAlchemyError
+from datetime import datetime
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
@@ -31,7 +32,8 @@ def get_todos():
             'id': todo.id,
             'task': todo.task,
             'completed': todo.completed,
-            'category': todo.category.value if todo.category else 'No Category'
+            'category': todo.category.value if todo.category else 'No Category',
+            'due_date': todo.due_date.isoformat() if todo.due_date else None
         } for todo in todos]
         logger.info(f'Fetched todos: {todo_list}')
         return jsonify(todo_list)
@@ -45,16 +47,17 @@ def add_todo():
         data = request.json
         logger.info(f"Received data for new todo: {data}")
         category = CategoryEnum[data['category'].upper()]
-        logger.info(f"Converted category: {category}")
-        new_todo = Todo(task=data['task'], category=category)
+        due_date = datetime.fromisoformat(data['due_date']) if data.get('due_date') else None
+        new_todo = Todo(task=data['task'], category=category, due_date=due_date)
         db.session.add(new_todo)
         db.session.commit()
-        logger.info(f"New todo added: {new_todo.id}, {new_todo.task}, {new_todo.category}")
+        logger.info(f"New todo added: {new_todo.id}, {new_todo.task}, {new_todo.category}, {new_todo.due_date}")
         return jsonify({
             "id": new_todo.id,
             "task": new_todo.task,
             "completed": new_todo.completed,
-            "category": new_todo.category.value
+            "category": new_todo.category.value,
+            "due_date": new_todo.due_date.isoformat() if new_todo.due_date else None
         }), 201
     except KeyError as ke:
         db.session.rollback()
@@ -63,7 +66,7 @@ def add_todo():
     except ValueError as ve:
         db.session.rollback()
         logger.error(f"ValueError in add_todo: {str(ve)}", exc_info=True)
-        return jsonify({"error": f"Invalid category value: {data.get('category', 'Not provided')}"}), 400
+        return jsonify({"error": f"Invalid value: {str(ve)}"}), 400
     except Exception as e:
         db.session.rollback()
         logger.error(f"Error adding todo: {str(e)}", exc_info=True)
@@ -81,13 +84,16 @@ def update_todo(todo_id):
             todo.completed = data['completed']
         if 'category' in data:
             todo.category = CategoryEnum[data['category'].upper()]
+        if 'due_date' in data:
+            todo.due_date = datetime.fromisoformat(data['due_date']) if data['due_date'] else None
         db.session.commit()
-        logger.info(f"Todo updated: {todo.id}, {todo.task}, {todo.completed}, {todo.category}")
+        logger.info(f"Todo updated: {todo.id}, {todo.task}, {todo.completed}, {todo.category}, {todo.due_date}")
         return jsonify({
             "id": todo.id,
             "task": todo.task,
             "completed": todo.completed,
-            "category": todo.category.value
+            "category": todo.category.value,
+            "due_date": todo.due_date.isoformat() if todo.due_date else None
         })
     except Exception as e:
         db.session.rollback()
